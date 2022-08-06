@@ -27,7 +27,7 @@
         </el-col>
       </el-row>
     </div>
-    <p class="text-center bg-[#1f2d4f] text-[white] w-full py-[1em]">Thế giới thế thao © 2018</p>
+    <p class="text-center bg-[#1f2d4f] text-[white] w-full py-[1em]">Thế giới thế thao © 2022</p>
   </footer>
 </template>
 <script>
