@@ -1,5 +1,5 @@
 <template lang="html">
-  <div v-loading="loading" class="relative">
+  <div v-loading.fullscreen.lock="loading" class="relative">
     <el-row :gutter="24">
       <el-col :sm="24" :md="16">
         <!-- main content -->
@@ -107,6 +107,7 @@
               format="yyyy/MM/dd"
               value-format="yyyy/MM/dd"
               @change="changeDay"
+              :pickerOptions="pickerOptions"
             >
             </el-date-picker>
             <el-row :gutter="24" class="mb-[1em]" v-if="time.length">
@@ -170,7 +171,7 @@
                         <p v-else>-{{ voucher.value | formatMoney }}</p>
                       </div>
                       <p class="text-left">Ngày hết hạn: {{ voucher.endDate }}</p>
-                      <p class="text-left mt-1">Số lượng voucher còn: {{ voucher.amount }}</p>
+                      <p class="mt-1 text-left">Số lượng voucher còn: {{ voucher.amount }}</p>
                     </div>
                   </el-checkbox>
                 </div>
@@ -262,6 +263,11 @@ export default {
       isOpenPrice: false,
       isDayOff: false,
       message: '',
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now() - 8.64e7
+        }
+      },
       form: {
         orderDay: '',
         timeBooks: [],
@@ -305,8 +311,7 @@ export default {
     async sendFormData() {
       try {
         this.loading = true
-
-        this._placeOrder()
+        await this._placeOrder()
       } catch (e) {
         this.$vmess.error('There is an error')
       } finally {
@@ -351,6 +356,12 @@ export default {
         return false
       }
 
+      const phonePattern = /^[0-9]{10}$/
+
+      if (!phonePattern.test(this.form.phoneNumber)) {
+        this.$vmess.error('Nhập vào số điện thoại đúng định dạng và bao gồm 10 kí tự')
+        return false
+      }
       await order(formData)
       this.price = {}
       this._resetForm()
@@ -459,5 +470,10 @@ export default {
 .icon-class {
   height: 30px;
   margin-right: 0.25em;
+}
+</style>
+<style>
+.circular {
+  margin: 0 auto;
 }
 </style>
