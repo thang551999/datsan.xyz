@@ -181,6 +181,7 @@ export default {
         this.dialogVisible = false
         this.form.content = ''
       } catch (error) {
+         this.$vmess.error('Đơn hàng đã gửi báo cáo')
         console.log(error)
       }
     },
