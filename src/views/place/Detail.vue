@@ -111,16 +111,16 @@
             >
             </el-date-picker>
             <el-row :gutter="24" class="mb-[1em]" v-if="time.length">
-              <el-col :span="8" v-for="item in time" :key="item.time" class="mb-[1em]">
+              <el-col :span="12" v-for="(item,index) in time" :key="item.time" class="mb-[1em]" >
                 <el-checkbox
                   v-model="form.timeBooks"
                   border
                   class="w-full"
-                  :label="item.time"
+                  :label="`${item.time}`"
                   :disabled="!item.isReady"
                   @change="_getPrice"
                 >
-                  {{ item.time }}
+                  {{ index==time.length-1 ?item.time + "-" + place.timeClose  :item.time + "-" + time[index+1].time}}
                 </el-checkbox>
               </el-col>
             </el-row>
@@ -241,19 +241,19 @@
   </div>
 </template>
 <script>
-import { getPlaceById, getTime, createComment } from '@/api/place'
-import { applyVoucher, order } from '@/api/order'
-import { getDay } from '@/utils/day'
-import { VOUNCHER_TYPE } from '@/utils/constants'
+import { getPlaceById, getTime, createComment } from "@/api/place";
+import { applyVoucher, order } from "@/api/order";
+import { getDay } from "@/utils/day";
+import { VOUNCHER_TYPE } from "@/utils/constants";
 
 export default {
-  name: 'Detail',
+  name: "Detail",
   async created() {
     try {
-      this.form.orderDay = getDay(Date.now())
-      await this.getData(this.form.orderDay)
+      this.form.orderDay = getDay(Date.now());
+      await this.getData(this.form.orderDay);
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data() {
@@ -262,40 +262,45 @@ export default {
       voucherType: VOUNCHER_TYPE,
       isOpenPrice: false,
       isDayOff: false,
-      message: '',
+      message: "",
       pickerOptions: {
         disabledDate(time) {
-          return time.getTime() < Date.now() - 8.64e7
-        }
+          return time.getTime() < Date.now() - 8.64e7;
+        },
       },
       form: {
-        orderDay: '',
+        orderDay: "",
         timeBooks: [],
         services: [],
         voucher: [],
-        phoneNumber: ''
+        phoneNumber: "",
       },
 
       comment: {
         star: 0,
-        comment: ''
+        comment: "",
       },
 
       place: {
         services: [],
         voucherCreate: [],
-        comments: []
+        comments: [],
+        timeOpen: "",
+        timeClose: "",
       },
       time: [],
-      price: {}
-    }
+      price: {},
+    };
   },
 
   methods: {
     async getData(day) {
-      const [stadium] = await Promise.all([getPlaceById(this.$route.params.id), this._getTime(day)])
+      const [stadium] = await Promise.all([
+        getPlaceById(this.$route.params.id),
+        this._getTime(day),
+      ]);
 
-      this.place = stadium.data.data
+      this.place = stadium.data.data;
     },
 
     /**
@@ -303,19 +308,19 @@ export default {
      * @param {Datetime} day format "yyyy/MM/dd"
      */
     async changeDay(day) {
-      this.form.timeBooks = []
-      this.price = {}
-      await this._getTime(day)
+      this.form.timeBooks = [];
+      this.price = {};
+      await this._getTime(day);
     },
 
     async sendFormData() {
       try {
-        this.loading = true
-        await this._placeOrder()
+        this.loading = true;
+        await this._placeOrder();
       } catch (e) {
-        this.$vmess.error('There is an error')
+        this.$vmess.error("There is an error");
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
@@ -323,110 +328,117 @@ export default {
       try {
         const sendData = {
           ...this.comment,
-          place: { id: this.place.id }
-        }
-        await createComment(sendData)
-        this.form.orderDay = getDay(Date.now())
-        await this.getData(this.form.orderDay)
-        this.comment = ''
-        this.$vmess.success('Cảm ơn bạn đã gửi đánh giá')
+          place: { id: this.place.id },
+        };
+        await createComment(sendData);
+        this.form.orderDay = getDay(Date.now());
+        await this.getData(this.form.orderDay);
+        this.comment = "";
+        this.$vmess.success("Cảm ơn bạn đã gửi đánh giá");
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
     },
 
     async _getPrice() {
-      const formData = this._createFormData()
-      const res = await applyVoucher(formData)
+      const formData = this._createFormData();
+      const res = await applyVoucher(formData);
       this.price = {
         ...res.data,
-        moneyRes: this._getMoney(res.data)
-      }
+        moneyRes: this._getMoney(res.data),
+      };
     },
 
     async _placeOrder() {
-      const formData = this._createFormData()
+      const formData = this._createFormData();
 
-      if (!this.$store.getters['token']) {
-        return this.$vmess.error('Xin vui lòng đăng nhập để thực hiện chức năng này')
+      if (!this.$store.getters["token"]) {
+        return this.$vmess.error(
+          "Xin vui lòng đăng nhập để thực hiện chức năng này"
+        );
       }
 
-      if (this.price.moneyRes > this.$store.getters['money']) {
-        this.$vmess.error('Bạn không đủ tiền để đặt sân! Hãy nạp thêm tiền để tiếp tục')
-        return false
+      if (this.price.moneyRes > this.$store.getters["money"]) {
+        this.$vmess.error(
+          "Bạn không đủ tiền để đặt sân! Hãy nạp thêm tiền để tiếp tục"
+        );
+        return false;
       }
 
-      const phonePattern = /^[0-9]{10}$/
+      const phonePattern = /^[0-9]{10}$/;
 
       if (!phonePattern.test(this.form.phoneNumber)) {
-        this.$vmess.error('Nhập vào số điện thoại đúng định dạng và bao gồm 10 kí tự')
-        return false
+        this.$vmess.error(
+          "Nhập vào số điện thoại đúng định dạng và bao gồm 10 kí tự"
+        );
+        return false;
       }
-      await order(formData)
-      this.price = {}
-      this._resetForm()
-      this.form.orderDay = getDay(Date.now())
-      await this.getData(this.form.orderDay)
+      await order(formData);
+      this.price = {};
+      this._resetForm();
+      this.form.orderDay = getDay(Date.now());
+      await this.getData(this.form.orderDay);
 
-      this.$vmess.success('Chúc mừng bạn đã đặt sân thành công!!')
+      this.$vmess.success("Chúc mừng bạn đã đặt sân thành công!!");
     },
 
     _createFormData() {
       return {
         ...this.form,
         services: this.form.services?.map((item) => {
-          return this.place.services[item]
+          return this.place.services[item];
         }),
 
         voucher: this.form.voucher?.map((item) => {
-          return this.place.voucherCreate[item]
+          return this.place.voucherCreate[item];
         }),
 
         place: {
-          id: this.place.id
-        }
-      }
+          id: this.place.id,
+        },
+      };
     },
 
     _getMoney(data) {
-      const moneyRes = Number(data.money) + Number(data.gasFee) - Number(data.moneyDown)
+      const moneyRes =
+        Number(data.money) + Number(data.gasFee) - Number(data.moneyDown);
       if (moneyRes >= 0) {
-        return moneyRes
+        return moneyRes;
       } else {
-        return 0
+        return 0;
       }
     },
 
     _resetForm() {
       this.form = {
-        orderDay: '',
+        orderDay: "",
         timeBooks: [],
         services: [],
         voucher: [],
-        phoneNumber: ''
-      }
+        phoneNumber: "",
+      };
     },
 
     async _getTime(day) {
-      this.time = []
-      const res = await getTime(this.$route.params.id, { day })
+      this.time = [];
+      const res = await getTime(this.$route.params.id, { day });
       if (res.data.data.messgae) {
-        this.isDayOff = true
-        this.message = res.data.data.messgae
-        return false
+        this.isDayOff = true;
+        this.message = res.data.data.messgae;
+        return false;
       }
-      this.isDayOff = false
-      this.time = res.data.data
+      this.isDayOff = false;
+      this.time = res.data.data;
     },
 
     isVoucherAvailable(isActive, endDate, amount) {
-      if (!isActive) return false
-      if (amount <= 0) return false
-      if (new Date(endDate) < new Date()) return false
-      return true
-    }
-  }
-}
+      if (!isActive) return false;
+      if (amount <= 0) return false;
+      if (new Date(endDate) < new Date()) return false;
+      return true;
+    },
+  },
+};
 </script>
 <style lang="css" scoped>
 .detail-items {
@@ -464,7 +476,8 @@ export default {
 }
 
 .fixed-bar {
-  box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px,
+    rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
 }
 
 .icon-class {
