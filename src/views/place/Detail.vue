@@ -5,12 +5,12 @@
         <!-- main content -->
         <section class="detail-items">
           <h2 class="font-bold text-[1.25rem]">{{ place.name }}</h2>
-          <span
+          <!-- <span
             ><i class="el-icon-star-on text-[#fadb14]" v-for="i in place.star" :key="i" /> ({{
               place.comments.length
             }}
             đánh giá)</span
-          >
+          > -->
           <p class="mb-[1.5em]">
             <i class="el-icon-location" />
             <span>
@@ -29,17 +29,17 @@
         <section class="detail-items">
           <p class="font-bold text-[1.25rem] mb-[1em]">Đánh giá {{ place.name }}</p>
           <div>
-            <span class="text-[1.25rem] font-bold text-main mr-[0.5em]">{{ place.star }}</span>
-            <span>
+            <!-- <span class="text-[1.25rem] font-bold text-main mr-[0.5em]">{{ place.star }}</span> -->
+            <!-- <span>
               <i class="el-icon-star-on text-[#fadb14]" v-for="i in place.star" :key="'star' + i" />
               ({{ place.comments.length }}
               đánh giá)
-            </span>
+            </span> -->
 
             <div class="rounded-[5px] border border-[#e5e5e5] p-[1em]">
-              <div class="flex items-center mb-[0.5em] font-[700]">
+              <!-- <div class="flex items-center mb-[0.5em] font-[700]">
                 Voting <el-rate class="ml-[0.5em]" v-model="comment.star"></el-rate>
-              </div>
+              </div> -->
               <el-form>
                 <el-row :gutter="12">
                   <el-col :md="24">
@@ -74,17 +74,17 @@
           <p class="font-bold text-[1.25rem] mb-[1em]">Đánh giá/Bình luận</p>
 
           <div
-            class="flex p-1 mb-3 rounded-md border-[#ededed] border"
+            class="comment-elemt flex p-1 mb-3 rounded-md border-[#ededed] border "
             v-for="(item, i) in place.comments"
             :key="'comment' + i"
           >
             <el-avatar icon="el-icon-user-solid" class="mr-2 avt-image" />
             <div>
-              <span class="font-[500]">Username</span>
+              <span class="font-[500]">Người dùng: {{item.user.fullName}}</span>
               <div>
                 <i class="el-icon-star-on text-[#fadb14]" v-for="i in item.star" :key="i" />
               </div>
-              <p>{{ item.comment }}</p>
+              <p>Nội dung đánh giá: {{ item.comment }}</p>
             </div>
           </div>
         </section>
@@ -336,6 +336,7 @@ export default {
         this.comment = "";
         this.$vmess.success("Cảm ơn bạn đã gửi đánh giá");
       } catch (e) {
+         this.$vmess.error("Bạn cần đăng nhập");
         console.log(e);
       }
     },
@@ -488,5 +489,9 @@ export default {
 <style>
 .circular {
   margin: 0 auto;
+}
+
+.comment-elemt{
+  height: 70px;
 }
 </style>
